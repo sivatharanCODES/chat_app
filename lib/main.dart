@@ -1,3 +1,4 @@
+import 'package:chat_app/screens/auth.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -13,10 +14,11 @@ class App extends StatelessWidget {
       title: 'Flutter Chat App',
       theme: ThemeData().copyWith(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 63, 17, 177),
+          seedColor: const Color(0x0017CE92),
         ),
       ),
-      // home: ,
+      home: const AuthScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
