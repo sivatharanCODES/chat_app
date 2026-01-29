@@ -17,6 +17,7 @@ class _AuthScreen extends State<AuthScreen> {
 
   void _submit() {
     final isValid = _formKey.currentState!.validate();
+
     if (isValid) {
       _formKey.currentState!.save();
       debugPrint(_enteredEmail);
@@ -117,6 +118,7 @@ class _AuthScreen extends State<AuthScreen> {
                               setState(() {
                                 _isLogin = !_isLogin;
                               });
+                              _formKey.currentState!.reset();
                             },
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 6),
