@@ -10,6 +10,8 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreen extends State<AuthScreen> {
+  var _isLogin = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,6 +38,7 @@ class _AuthScreen extends State<AuthScreen> {
                     padding: const EdgeInsets.all(16),
                     child: Form(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           TextFormField(
                             decoration: const InputDecoration(
@@ -50,6 +53,46 @@ class _AuthScreen extends State<AuthScreen> {
                               labelText: 'Password',
                             ),
                             obscureText: true,
+                          ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              child: Text(
+                                _isLogin ? 'Login' : 'SignUp',
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 12,
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _isLogin = !_isLogin;
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                _isLogin
+                                    ? 'Create an account'
+                                    : 'I already have and account',
+                              ),
+                            ),
                           ),
                         ],
                       ),
