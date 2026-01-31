@@ -23,6 +23,7 @@ class _AuthScreen extends State<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
   var _enteredEmail = '';
   var _enteredPassword = '';
+  var _enteredUsername = '';
   File? _selectedImage;
   var _isAuthenticating = false;
 
@@ -50,7 +51,7 @@ class _AuthScreen extends State<AuthScreen> {
 
         final fileName = '${userCredential.user!.uid}.jpg';
         // final avatarFile = File('path/to/file');
-        final response = await supabase.storage
+        await supabase.storage
             .from('profiles')
             .upload(
               fileName,
@@ -61,21 +62,19 @@ class _AuthScreen extends State<AuthScreen> {
               ),
             );
 
-        if (response != null) {
-          // Get public URL
-          final String imageUrl = supabase.storage
-              .from('profiles')
-              .getPublicUrl(fileName);
+        // Get public URL
+        final String imageUrl = supabase.storage
+            .from('profiles')
+            .getPublicUrl(fileName);
 
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(userCredential.user!.uid)
-              .set({
-                'username': 'to be done...',
-                'email': _enteredEmail,
-                'image_url': imageUrl,
-              });
-        }
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .set({
+              'username': _enteredUsername,
+              'email': _enteredEmail,
+              'image_url': imageUrl,
+            });
       }
     } on FirebaseAuthException catch (error) {
       setState(() {
@@ -143,6 +142,24 @@ class _AuthScreen extends State<AuthScreen> {
                               _enteredEmail = value!;
                             },
                           ),
+                          if (!_isLogin)
+                            TextFormField(
+                              validator: (value) {
+                                if (value == null ||
+                                    value.isEmpty ||
+                                    value.trim().length < 4) {
+                                  return 'Please enter atleast 4 characters';
+                                }
+                                return null;
+                              },
+                              decoration: const InputDecoration(
+                                labelText: 'Username',
+                              ),
+                              enableSuggestions: false,
+                              onSaved: (value) {
+                                _enteredUsername = value!;
+                              },
+                            ),
                           TextFormField(
                             decoration: const InputDecoration(
                               labelText: 'Password',
