@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:chat_app/widgets/user_image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -47,11 +48,12 @@ class _AuthScreen extends State<AuthScreen> {
           password: _enteredPassword,
         );
 
+        final fileName = '${userCredential.user!.uid}.jpg';
         // final avatarFile = File('path/to/file');
-        final imagePath = await supabase.storage
+        final response = await supabase.storage
             .from('profiles')
             .upload(
-              '${userCredential.user!.uid}.jpg',
+              fileName,
               _selectedImage!,
               fileOptions: const FileOptions(
                 cacheControl: '3600',
@@ -59,7 +61,21 @@ class _AuthScreen extends State<AuthScreen> {
               ),
             );
 
-        print(imagePath);
+        if (response != null) {
+          // Get public URL
+          final String imageUrl = supabase.storage
+              .from('profiles')
+              .getPublicUrl(fileName);
+
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userCredential.user!.uid)
+              .set({
+                'username': 'to be done...',
+                'email': _enteredEmail,
+                'image_url': imageUrl,
+              });
+        }
       }
     } on FirebaseAuthException catch (error) {
       setState(() {
