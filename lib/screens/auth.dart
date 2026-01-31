@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:chat_app/widgets/user_image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final _firebase = FirebaseAuth.instance;
+final supabase = Supabase.instance.client;
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -21,6 +23,7 @@ class _AuthScreen extends State<AuthScreen> {
   var _enteredEmail = '';
   var _enteredPassword = '';
   File? _selectedImage;
+  var _isAuthenticating = false;
 
   void _submit() async {
     final isValid = _formKey.currentState!.validate();
@@ -30,6 +33,9 @@ class _AuthScreen extends State<AuthScreen> {
     }
     _formKey.currentState!.save();
     try {
+      setState(() {
+        _isAuthenticating = true;
+      });
       if (_isLogin) {
         final userCredential = await _firebase.signInWithEmailAndPassword(
           email: _enteredEmail,
@@ -40,8 +46,25 @@ class _AuthScreen extends State<AuthScreen> {
           email: _enteredEmail,
           password: _enteredPassword,
         );
+
+        // final avatarFile = File('path/to/file');
+        final imagePath = await supabase.storage
+            .from('profiles')
+            .upload(
+              '${userCredential.user!.uid}.jpg',
+              _selectedImage!,
+              fileOptions: const FileOptions(
+                cacheControl: '3600',
+                upsert: true,
+              ),
+            );
+
+        print(imagePath);
       }
     } on FirebaseAuthException catch (error) {
+      setState(() {
+        _isAuthenticating = false;
+      });
       if (!mounted) return;
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -122,44 +145,58 @@ class _AuthScreen extends State<AuthScreen> {
                           const SizedBox(
                             height: 20,
                           ),
-                          ElevatedButton(
-                            onPressed: _submit,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.primary,
+                          if (_isAuthenticating)
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(),
+                              ],
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              child: Text(
-                                _isLogin ? 'Login' : 'SignUp',
-                                style: TextStyle(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onPrimary,
+                          if (!_isAuthenticating)
+                            ElevatedButton(
+                              onPressed: _submit,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.primary,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 20,
+                                ),
+                                child: Text(
+                                  _isLogin ? 'Login' : 'SignUp',
+                                  style: TextStyle(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(
-                            height: 12,
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              setState(() {
-                                _isLogin = !_isLogin;
-                              });
-                              _formKey.currentState!.reset();
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 6),
-                              child: Text(
-                                _isLogin
-                                    ? 'Create an account'
-                                    : 'I already have and account',
+                          if (!_isAuthenticating)
+                            const SizedBox(
+                              height: 12,
+                            ),
+                          if (!_isAuthenticating)
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _isLogin = !_isLogin;
+                                });
+                                _formKey.currentState!.reset();
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 6,
+                                ),
+                                child: Text(
+                                  _isLogin
+                                      ? 'Create an account'
+                                      : 'I already have and account',
+                                ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                     ),

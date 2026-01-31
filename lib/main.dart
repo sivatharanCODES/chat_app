@@ -4,13 +4,21 @@ import 'package:chat_app/screens/splash.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  // Supabase
+  await Supabase.initialize(
+    url: 'https://fezmrbfvqgxuflzintcb.supabase.co',
+    anonKey: 'sb_publishable_8IswCj3ZialqqflI0GdKVA_NzhNonf8',
+  );
+
   runApp(const App());
 }
 
